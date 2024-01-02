@@ -1,7 +1,7 @@
 import streamlit as st
-import PyPDF2
+import fitz  # PyMuPDF
 from translate import Translator
-import pyttsx3
+from gtts import gTTS
 import os
 
 # Function to extract text from a PDF file starting from a specific page
@@ -12,11 +12,11 @@ def extract_text_from_pdf(uploaded_file, start_page):
         temp_file.write(uploaded_file.read())
 
     # Read text from the temporary PDF file starting from the specified page
-    with open(temp_pdf_path, 'rb') as file:
-        pdf_reader = PyPDF2.PdfReader(file)
-        text = ''
-        for page_num in range(start_page - 1, len(pdf_reader.pages)):
-            text += pdf_reader.pages[page_num].extract_text()
+    pdf_document = fitz.open(temp_pdf_path)
+    text = ''
+    for page_num in range(start_page - 1, pdf_document.page_count):
+        page = pdf_document[page_num]
+        text += page.get_text()
 
     # Remove the temporary PDF file
     os.remove(temp_pdf_path)
@@ -29,15 +29,13 @@ def translate_text(text, source_lang, target_lang):
     translation = translator.translate(text)
     return translation
 
-# Function to convert text to speech using pyttsx3
+# Function to convert text to speech using gTTS
 def text_to_speech(text, lang):
     if not text:
         raise ValueError("No text to speak")
 
-    engine = pyttsx3.init()
-    engine.say(text)
-    engine.save_to_file(text, 'output.mp3')
-    engine.runAndWait()
+    tts = gTTS(text, lang=lang)
+    tts.save('output.mp3')
 
 # Streamlit app
 def main():
@@ -59,19 +57,19 @@ def main():
 
         # Extract text from the specified page
         text = extract_text_from_pdf(pdf_file, page_number)
-        #st.subheader("Page Content:")
-        #st.text(text)
+        # st.subheader("Page Content:")
+        # st.text(text)
 
         # Translate the text
         translated_text = translate_text(text, source_lang, target_lang)
 
-        #st.subheader("Translated Content:")
-        #st.text(translated_text)
+        # st.subheader("Translated Content:")
+        # st.text(translated_text)
 
         # Play audio button
         if st.button("Play Audio"):
             try:
-                # Convert text to speech using pyttsx3
+                # Convert text to speech using gTTS and get the audio stream
                 text_to_speech(translated_text, lang='en')  # You can adjust the language as needed
 
                 # Play the audio using Streamlit's audio widget
