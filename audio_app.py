@@ -1,7 +1,7 @@
 import streamlit as st
 import PyPDF2
 from translate import Translator
-from gtts import gTTS
+import pyttsx3
 import os
 
 # Function to extract text from a PDF file starting from a specific page
@@ -29,13 +29,15 @@ def translate_text(text, source_lang, target_lang):
     translation = translator.translate(text)
     return translation
 
-# Function to convert text to speech using gTTS
+# Function to convert text to speech using pyttsx3
 def text_to_speech(text, lang):
     if not text:
         raise ValueError("No text to speak")
 
-    tts = gTTS(text, lang=lang)
-    tts.save('output.mp3')
+    engine = pyttsx3.init()
+    engine.say(text)
+    engine.save_to_file(text, 'output.mp3')
+    engine.runAndWait()
 
 # Streamlit app
 def main():
@@ -69,7 +71,7 @@ def main():
         # Play audio button
         if st.button("Play Audio"):
             try:
-                # Convert text to speech using gTTS and get the audio stream
+                # Convert text to speech using pyttsx3
                 text_to_speech(translated_text, lang='en')  # You can adjust the language as needed
 
                 # Play the audio using Streamlit's audio widget
