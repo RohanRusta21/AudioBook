@@ -1,0 +1,5 @@
+streamlit
+PyPDF2
+translate
+pyttsx3
+gTTS
