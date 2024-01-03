@@ -48,7 +48,11 @@ def text_to_speech(text, lang):
             raise ValueError("No text to speak")
 
         print(f"Text to be spoken: {text}")  # Add this line for debugging
-        tts = gTTS(text, lang=lang)
+
+        # Specify the language for the voice
+        tts_lang = lang if lang == 'en' else 'hi'
+
+        tts = gTTS(text, lang=tts_lang)
 
         print("Saving audio file...")  # Add this line for debugging
         tts.save('output.mp3')
@@ -92,7 +96,7 @@ def main():
         if st.button("Play Audio"):
             try:
                 # Convert text to speech using gTTS and get the audio stream
-                text_to_speech(translated_text, lang='en')  # You can adjust the language as needed
+                text_to_speech(translated_text, lang=target_lang)  # Adjust the language as needed
 
                 # Play the audio using Streamlit's audio widget
                 st.audio('output.mp3', format='audio/mp3')
