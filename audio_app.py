@@ -2,8 +2,7 @@ import streamlit as st
 import fitz  # PyMuPDF
 from gtts import gTTS
 from englisttohindi.englisttohindi import EngtoHindi
-from translate import Translator  # Add this line to import the 'Translator' class
-import os
+import os  # Add this line to import the 'os' module
 import traceback  # Add this import for traceback
 
 # Function to extract text from a PDF file for a specific page
@@ -27,20 +26,10 @@ def extract_text_from_pdf(uploaded_file, target_page):
 
     return text
 
-# Function to translate text with text splitting
-def translate_text(text, source_lang, target_lang):
-    translator = Translator(from_lang=source_lang, to_lang=target_lang)
-    
-    # Split the text into chunks of 500 characters
-    chunks = [text[i:i+500] for i in range(0, len(text), 500)]
-    
-    translated_chunks = []
-    
-    for chunk in chunks:
-        translation = translator.translate(chunk)
-        translated_chunks.append(translation)
-
-    return ''.join(translated_chunks)
+# Function to translate text using EngtoHindi
+def translate_text_eng_to_hindi(text):
+    converter = EngtoHindi(text)
+    return converter.convert
 
 # Function to convert text to speech using gTTS
 def text_to_speech(text, lang):
@@ -77,18 +66,19 @@ def main():
         # Get user input for page number
         page_number = st.number_input("Enter Page Number", value=1, step=1, min_value=1, max_value=10000)
 
-        # Translation options
-        st.subheader("Translation:")
-        source_lang = st.selectbox("Select Source Language", ["en", "hi"])
-        target_lang = st.selectbox("Select Target Language", ["en", "hi"])
-
         # Extract text from the specified page
         text = extract_text_from_pdf(pdf_file, page_number)
-        # st.subheader("Page Content:")
-        # st.text(text)
 
-        # Translate the text
-        translated_text = translate_text(text, source_lang, target_lang)
+        # Translation options
+        st.subheader("Translation:")
+        source_lang = st.selectbox("Select Source Language", ["en"])
+        target_lang = st.selectbox("Select Target Language", ["hi"])
+
+        # Translate the text using EngtoHindi
+        if source_lang == "en" and target_lang == "hi":
+            translated_text = translate_text_eng_to_hindi(text)
+        else:
+            translated_text = text
 
         # st.subheader("Translated Content:")
         # st.text(translated_text)
