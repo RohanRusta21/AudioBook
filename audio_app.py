@@ -14,8 +14,8 @@ def extract_text_from_pdf(uploaded_file, target_page):
 
     pdf_document = fitz.open(temp_pdf_path)
 
-    if target_page > pdf_document.page_count:
-        raise ValueError("Invalid page number. The PDF does not have the specified page.")
+    if target_page > pdf_document.page_count or target_page <= 0:
+        raise ValueError("Invalid page number. Please provide a valid page number within the range of the PDF.")
 
     page = pdf_document[target_page - 1]
     lines = page.get_text("text").split('\n')
@@ -48,16 +48,26 @@ def text_to_speech(text, lang):
 
 # Function to translate text using EngtoHindi
 def translate_text_eng_to_hindi(text):
-    # Split the text into sentences
-    sentences = re.split(r'(?<!\w\.\w.)(?<![A-Z][a-z]\.)(?<=\.|\?)\s', text)
+    try:
+        # Split the text into sentences
+        sentences = re.split(r'(?<!\w\.\w.)(?<![A-Z][a-z]\.)(?<=\.|\?)\s', text)
 
-    # Translate each sentence individually
-    translated_sentences = [EngtoHindi(sentence).convert for sentence in sentences]
+        # Translate each sentence individually
+        translated_sentences = [EngtoHindi(sentence).convert for sentence in sentences]
 
-    # Join the translated sentences into a single text
-    translated_text = ' '.join(translated_sentences)
+        # Join the translated sentences into a single text
+        translated_text = ' '.join(translated_sentences)
 
-    return translated_text
+        return translated_text
+
+    except TypeError as te:
+        print(f"TypeError in translate_text_eng_to_hindi: {te}")
+        return "Text can't be translated. Please provide valid input."
+
+    except Exception as e:
+        print(f"Error in translate_text_eng_to_hindi: {e}")
+        traceback.print_exc()
+        return "An error occurred during translation."
 
 # Streamlit app
 def main():
@@ -70,7 +80,11 @@ def main():
 
         page_number = st.number_input("Enter Page Number", value=1, step=1, min_value=1, max_value=10000)
 
-        lines = extract_text_from_pdf(pdf_file, page_number)
+        try:
+            lines = extract_text_from_pdf(pdf_file, page_number)
+        except ValueError as ve:
+            st.error(f"Error: {ve}")
+            return
 
         st.subheader("Translation:")
         source_lang = st.selectbox("Select Source Language", ["en", "hi"])
@@ -79,10 +93,7 @@ def main():
         text = ' '.join(lines)
 
         # Translate the entire content of the specified page using EngtoHindi if source is English and target is Hindi
-        if source_lang == "en" and target_lang == "hi":
-            translated_text = translate_text_eng_to_hindi(text)
-        else:
-            translated_text = text
+        translated_text = translate_text_eng_to_hindi(text)
 
         if st.button("Play Audio"):
             try:
