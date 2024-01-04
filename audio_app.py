@@ -1,7 +1,8 @@
 import streamlit as st
 import fitz  # PyMuPDF
-from translate import Translator
 from gtts import gTTS
+from englisttohindi.englisttohindi import EngtoHindi
+from translate import Translator  # Add this line to import the 'Translator' class
 import os
 import traceback  # Add this import for traceback
 
